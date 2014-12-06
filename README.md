@@ -1,0 +1,4 @@
+ramduce
+=======
+
+exploring transducers
