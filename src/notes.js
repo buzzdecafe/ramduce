@@ -36,12 +36,12 @@ function filter(pred, ls) {
 /*
 Both `map` and `filter` take a function and a list. Both rely on `concat` to assemble their output 
 list. What is different is how the accumulate their output. Let's see if we can get a lift by 
-factoring out the reducing function (i.e. `concat`), and passing in a function to get the initial 
-value of the accumulator:
+factoring out the reducing function (i.e. `concat`), and passing in a function to populate the
+accumulator:
 */
 
-function ???(reducer, initFn) {
+function ???(stepFn, initFn) {
   return function(fn, ls) {
     return ls.length === 0 ? [] :
-      reduce(reducer, initFn(head(ls)), ls);
+      reduce(stepFn, initFn(head(ls)), tail(ls));
 }
