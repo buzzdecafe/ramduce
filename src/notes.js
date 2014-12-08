@@ -1,6 +1,7 @@
 // Notes
 
 // Hickey talk notes
+// https://www.youtube.com/watch?v=6mTbuzafcII
 //
 // using my idiosyncratic type notation ...
 /*
@@ -150,9 +151,60 @@ step that runs in the order that they appear, left-to-right in the [composition]
 !!!!
 
 
+Early termination. 
+
+reduce usualyy process all input. How do we signal a transducer to stop taking input?
 
 
+compose(
+    chaining(unbundlePallet),
+    takingWhile(nonTicking),
+    filtering(nonFood),
+    map(labelHeavy)
+);
+
+Clojure supports early termination in `foldl` via a `Reduced` wrapper object. hmmm.
+Test for it with `reduced?`
+
+So this appears to be a boxy data type similar to Maybe et al. But it's different, 
+because Maybe et al. may wrap values that are not reduced.
+
+Rules:
+
+* Transducers *must* support Reduced. step functions may return a reduced value.
+* If a Transducer gets a reduced value from a nested step call, it must never call that 
+  step function again *with input*. hmmmm
 
 
+// takingWhile :: (a -> Boolean) -> ([b], a -> [b]) -> ([b], a -> [b]) 
+filtering = curry(function(pred, step) {
+  return function(acc, x) {
+    return pred(x) ? step(acc, x) : reduced(acc); // `reduced` means early termination.
+  };
+});
+
+So what does `reduced` look like? reduced :: acc -> Reduced acc ?
+
+More rules:
+
+* All step functions must have an arity-1 version that just takes the accumulator
+* this "completion operation" must be called once on the final accumulated value *once*
+* transducer may flush whatever state it has been accumulating before this completion step
+
+Init
+
+a function to provide the initial accumulator. see foldl1.
+
+Another rule:
+
+* Transducers *must* support arity-0 `init` in terms of a call to nested `step`
+
+Ultimately we get a set of three operations:
+
+init     arity-0
+complete arity-1
+step     arity-2
+
+(init, complete, step) -> (init, complete, step)'
 
 */
