@@ -76,7 +76,7 @@ function filterl(pred, ls) {
 
 function chainl(fn, ls) {
   return foldl(function(acc, x) { 
-    return reduce(append, acc, fn(x));
+    return foldl(append, acc, fn(x));
   }, [], ls);
 }
 
