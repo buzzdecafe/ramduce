@@ -208,3 +208,61 @@ step     arity-2
 (init, complete, step) -> (init, complete, step)'
 
 */
+
+// More research ...
+/*
+Clojure implementation of `reduce`:
+https://github.com/clojure/clojure/blob/clojure-1.6.0/src/clj/clojure/core.clj#L6275
+
+"f should be a function of 2 arguments. If val is not supplied,
+  returns the result of applying f to the first 2 items in coll, then
+  applying f to that result and the 3rd item, etc. 
+  
+variadic--the accummulator will be generated `foldl``-style if not supplied.
+So what happens if the `coll` is empty?
+
+  "If coll contains no
+  items, f must accept no arguments as well, and reduce returns the
+  result of calling f with no arguments."  
+
+well that answers that
+  
+  "If coll has only 1 item, it
+  is returned and f is not called."
+  
+there is a lot of sanity-chacking going on here.
+  
+  "If val is supplied, returns the
+  result of applying f to val and the first item in coll, then
+  applying f to that result and the 2nd item, etc. If coll contains no
+  items, returns val and f is not called."
+
+the variadic way is not possible when currying `reduce`. So this is the only
+part of the definition we can keep.
+
+Now have a look at:
+https://github.com/clojure/clojure/blob/master/src/clj/clojure/core/protocols.clj#L75
+
+clojure is explicitly testing whether the accumulator is `reduced?` and should
+terminate early:
+
+([coll f val]
+      (let [iter (.iterator coll)]
+        (loop [ret val]
+          (if (.hasNext iter)
+            (let [ret (f ret (.next iter))]
+                (if (reduced? ret)           ; <-- there it is
+                  @ret
+                  (recur ret)))
+            ret)))))
+
+So what does `reduced?` look like?
+https://github.com/clojure/clojure/blob/eccff113e7d68411d60f7204711ab71027dc5356/src/clj/clojure/core.clj#L2694
+
+essentially, if the accumulator is an instance of `Reduced`, then it is reduced:
+https://github.com/clojure/clojure/blob/9aaee3c111ce18b9b70695dd45a04b401a174113/src/jvm/clojure/lang/RT.java#L1756
+
+Clojure does this by wrapping the accumulator in a `Reduced` object with a call to `(reduced x)`
+https://github.com/clojure/clojure/blob/eccff113e7d68411d60f7204711ab71027dc5356/src/clj/clojure/core.clj#L2694
+
+*/
