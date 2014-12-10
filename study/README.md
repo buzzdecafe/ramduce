@@ -17,5 +17,5 @@ Resources for study
   [Transducers Explained: Pipelines](http://simplectic.com/blog/2014/transducers-explained-pipelines/)
   Kevin Beatty
 
-
+* [Functional Reactive Programming, Continued](http://haskell.cs.yale.edu/wp-content/uploads/2011/02/workshop-02.pdf) Henrik Nilsson, Antony Courtney, John Peterson
 
