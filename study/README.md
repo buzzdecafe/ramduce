@@ -20,3 +20,5 @@ Resources for study
 * [Functional Reactive Programming, Continued](http://haskell.cs.yale.edu/wp-content/uploads/2011/02/workshop-02.pdf) Henrik Nilsson, Antony Courtney, John Peterson
 
 * [Some trivial examples of using Clojure Transducers](http://ianrumford.github.io/blog/2014/08/08/Some-trivial-examples-of-using-Clojure-Transducers/) Ian Rumford
+
+* [Understanding Clojure Transducers Through Types](http://conscientiousprogrammer.com/blog/2014/08/07/understanding-cloure-transducers-through-types/) Franklin Chen
