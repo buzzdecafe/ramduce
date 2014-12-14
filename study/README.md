@@ -19,18 +19,24 @@ Transducers
 
 * [Transducers (docs)](http://clojure.org/transducers) 
 
-* [Transducers Esxplained: Part 1](http://simplectic.com/blog/2014/transducers-explained-1/) and
+* [Transducers Explained: Part 1](http://simplectic.com/blog/2014/transducers-explained-1/) and
   [Transducers Explained: Pipelines](http://simplectic.com/blog/2014/transducers-explained-pipelines/)
-  Kevin Beatty
-
-* [Functional Reactive Programming, Continued](http://haskell.cs.yale.edu/wp-content/uploads/2011/02/workshop-02.pdf) Henrik Nilsson, Antony Courtney, John Peterson
+  Kevin Beaty
 
 * [Some trivial examples of using Clojure Transducers](http://ianrumford.github.io/blog/2014/08/08/Some-trivial-examples-of-using-Clojure-Transducers/) Ian Rumford
 
 * [Understanding Clojure Transducers Through Types](http://conscientiousprogrammer.com/blog/2014/08/07/understanding-cloure-transducers-through-types/) Franklin Chen
 
-FRP
----
+
+Fold
+----
+* [Beautiful Folding](http://squing.blogspot.com/2008/11/beautiful-folding.html) Max Rabkin
+* [More beautiful fold zipping](http://conal.net/blog/posts/more-beautiful-fold-zipping) Conal Elliot
+
+Reactive Programming
+--------------------
+
+* [Functional Reactive Programming, Continued](http://haskell.cs.yale.edu/wp-content/uploads/2011/02/workshop-02.pdf) Henrik Nilsson, Antony Courtney, John Peterson
 
 * [Duality and the End of Reactive](http://channel9.msdn.com/Events/Lang-NEXT/Lang-NEXT-2014/Keynote-Duality) Erik Meijer
 
