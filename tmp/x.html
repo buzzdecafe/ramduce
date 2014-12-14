@@ -1,28 +1,14 @@
+<!doctype html>
 <html>
 <head>
 <script src="//cdn.jsdelivr.net/ramda/0.8.0/ramda.min.js"></script>
+<script>R.installTo(this);</script>
+<script src="../src/ramducers.js"></script>
 <script>
-R.installTo(this);
 var __ = void 0;
 
-var mapping = function(f) {
-  return function(step) {
-    return function(acc, x) {
-      return step(acc, f(x));
-    };
-  };
-};
-
-var filtering = function(f) {
-  return function(step) {
-    return function(acc, x) {
-      return f(x) ? step(acc, x) : acc;
-    };
-  };
-};
-
-var square = mapping(function(x) { return x * x; });
-var gt4 = filtering(gt(__, 4));
+var square = R.transducers.map(function(x) { return x * x; });
+var gt4 = R.transducers.filter(gt(__, 4));
 
 var squareGt4 = R.compose(gt4, square);
 var gt4Square = R.compose(square, gt4);
@@ -33,6 +19,9 @@ console.log('reduce(squareGt4(appendTo), [], [1,2,3,4,5,6]) : ' + res1);
 
 var res2 = reduce(gt4Square(appendTo), [], [1,2,3,4,5,6]);
 console.log('reduce(gt4Square(appendTo), [], [1,2,3,4,5,6]) : ' + res2);
+
+var res3 = reduce(squareGt4(multiply), 1, [1, 2, 3, 4, 5, 6]);
+console.log('reduce(gt4Square(multiply), [], [1,2,3,4,5,6]) : ' + res3);
 
 </script>
 </head>

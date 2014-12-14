@@ -11,7 +11,9 @@
   },
   "scripts": {
   },
-  "dependencies": {},
+  "dependencies": {
+    "ramda": "latest"
+  },
   "devDependencies": {
     "mocha":"latest"
   }
