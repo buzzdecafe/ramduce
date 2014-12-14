@@ -18,26 +18,26 @@ R.transducers = {
     };
   },
 
-  drop: function t_take(n) {
-    var count = n;
+  drop: function t_drop(n) {
     return function(step) {
+      var count = n;
       return function(acc, x) {
         return count-- > 0 ? acc : step(acc, x); // need `reduced` here?
       };
     };
   },
 
-  dropWhile: function t_takeWhile(pred) {
+  dropWhile: function t_dropWhile(pred) {
     return function(step) {
       return function(acc, x) {
         return pred(x) ? acc: step(acc, x); // need `reduced` here?
       };
     };
-  }
+  },
 
   take: function t_take(n) {
-    var count = n;
     return function(step) {
+      var count = n;
       return function(acc, x) {
         return count-- > 0 ? step(acc, x) : acc; // need `reduced` here?
       };
