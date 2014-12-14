@@ -26,8 +26,8 @@ function _curry2(fn) {
 }
 
 
-var tmap = _curry2(function _map(fn, list) {
-    if (hasMethod('map', list)) {
+module.exports = _curry2(function _map(fn, list) {
+    if (_hasMethod('map', list)) {
         return list.map(fn);
     }
     var idx = -1, len = list.length, result = new Array(len);
