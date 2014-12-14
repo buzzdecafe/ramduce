@@ -1,11 +1,12 @@
+var curry = require('ramda').curry;
+
 // beatty's `map` transducer
+//
 "use strict";
-module.exports = map;
-function map(callback) {
-  return function(xf){
-    return new Map(callback, xf);
-  };
-}
+var map = curry(function tmap(callback, xf) {
+  return new Map(callback, xf);
+});
+
 function Map(f, xf) {
   this.xf = xf;
   this.f = f;
@@ -20,3 +21,4 @@ Map.prototype.step = function(result, input) {
   return this.xf.step(result, this.f(input));
 };
 
+module.exports = map
