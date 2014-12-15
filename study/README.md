@@ -33,6 +33,12 @@ Fold
 * [Beautiful Folding](http://squing.blogspot.com/2008/11/beautiful-folding.html) Max Rabkin
 * [More beautiful fold zipping](http://conal.net/blog/posts/more-beautiful-fold-zipping) Conal Elliot
 
+Lens
+----
+* [Transducers are Perverse Lenses](http://www.reddit.com/r/haskell/comments/2cv6l4/clojures_transducers_are_perverse_lenses/)
+* Lens Tutorial [Part 1](http://blog.jakubarnold.cz/2014/07/14/lens-tutorial-introduction-part-1.html), [Part 2](http://blog.jakubarnold.cz/2014/08/06/lens-tutorial-stab-traversal-part-2.html) [Foldable and Traversable](http://blog.jakubarnold.cz/2014/07/30/foldable-and-traversable.html) Jakub Arnold
+* [Lenses](http://dev.stephendiehl.com/hask/#lenses) Stephen Diehl
+
 Reactive Programming
 --------------------
 
