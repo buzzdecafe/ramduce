@@ -27,11 +27,15 @@ Transducers
 
 * [Understanding Clojure Transducers Through Types](http://conscientiousprogrammer.com/blog/2014/08/07/understanding-cloure-transducers-through-types/) Franklin Chen
 
+* [CSP and transducers in JavaScript](http://phuu.net/2014/08/31/csp-and-transducers.html) Tom Ashworth
+
 
 Fold
 ----
 * [Beautiful Folding](http://squing.blogspot.com/2008/11/beautiful-folding.html) Max Rabkin
+
 * [More beautiful fold zipping](http://conal.net/blog/posts/more-beautiful-fold-zipping) Conal Elliot
+
 
 Reactive Programming
 --------------------
