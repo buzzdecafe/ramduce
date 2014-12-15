@@ -18,19 +18,13 @@ function _isFunction(obj){
 
 function _isTransformer(obj){
     return obj != null &&
-      (value[symTransformer] !== undef) ||
+      (value[symTransformer] !== null) ||
         (_isFunction(value.step) && _isFunction(value.result));
 }
 
 function _transformer(value){
-  var xf;
-  if(isTransformer(value)){
-    xf = value[symTransformer];
-    if(xf === undef){
-      xf = value;
-    }
-  }
-  return xf;
+    // precondition: _isTransformer
+    return value[symTransformer] || value;
 }
 
 function _curry2(fn) {
@@ -53,7 +47,7 @@ module.exports = _curry2(function _map(fn, list) {
     if (_hasMethod('map', list)) {
         return list.map(fn);
     } else if(_isTransformer(list)){
-        return new Map(fn, list);
+        return new Map(fn, _transformer(list));
     }
     var idx = -1, len = list.length, result = new Array(len);
     while (++idx < len) {
@@ -75,5 +69,3 @@ Map.prototype.result = function(result){
 Map.prototype.step = function(result, input) {
   return this.xf.step(result, this.f(input));
 };
-
-module.exports = map
