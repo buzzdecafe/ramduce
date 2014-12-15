@@ -18,7 +18,7 @@ function _isFunction(obj){
 
 function _isTransformer(obj){
     return obj != null &&
-      (value[symTransformer] !== null) ||
+      (value[symTransformer] != null) ||
         (_isFunction(value.step) && _isFunction(value.result));
 }
 
