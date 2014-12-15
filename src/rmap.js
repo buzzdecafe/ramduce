@@ -18,13 +18,13 @@ function _isFunction(obj){
 
 function _isTransformer(obj){
     return obj != null &&
-      (value[symTransformer] != null) ||
-        (_isFunction(value.step) && _isFunction(value.result));
+      (obj[symTransformer] != null) ||
+        (_isFunction(obj.step) && _isFunction(obj.result));
 }
 
-function _transformer(value){
+function _transformer(obj){
     // precondition: _isTransformer
-    return value[symTransformer] || value;
+    return obj[symTransformer] || obj;
 }
 
 function _curry2(fn) {
