@@ -18,19 +18,13 @@ function _isFunction(obj){
 
 function _isTransformer(obj){
     return obj != null &&
-      (obj[symTransformer] !== void 0) ||
+      (obj[symTransformer] != null) ||
         (_isFunction(obj.step) && _isFunction(obj.result));
 }
 
-function _transformer(value){
-  var xf;
-  if(isTransformer(value)){
-    xf = value[symTransformer];
-    if(xf === void 0){
-      xf = value;
-    }
-  }
-  return xf;
+function _transformer(obj){
+    // precondition: _isTransformer
+    return obj[symTransformer] || obj;
 }
 
 function _curry2(fn) {
@@ -55,8 +49,8 @@ var map = _curry2(function _map(fn, list) {
         return list.map(fn);
     }
     // Transducer case
-    if(_isTransformer(list)){
-        return new Map(fn, list);
+    if (_isTransformer(list)) {
+        return new Map(fn, _transformer(list));
     }
     // Array case (yes, I know it's a functor...)
     var idx = -1, len = list.length, result = new Array(len);
@@ -80,4 +74,4 @@ Map.prototype.step = function(result, input) {
   return this.xf.step(result, this.f(input));
 };
 
-module.exports = map
+module.exports = map;
