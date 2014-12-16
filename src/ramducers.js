@@ -2,6 +2,12 @@
 
 R.transducers = {
 
+  transduce: function(xform) {
+    return function(fn, init, ls) {
+      return R.reduce(xform(fn), init, ls);
+    };
+  },
+
   map: function t_map(fn) {
     return function(step) {
       return function(acc, x) {

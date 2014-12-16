@@ -18,15 +18,15 @@ function _isFunction(obj){
 
 function _isTransformer(obj){
     return obj != null &&
-      (value[symTransformer] !== undef) ||
-        (_isFunction(value.step) && _isFunction(value.result));
+      (obj[symTransformer] !== void 0) ||
+        (_isFunction(obj.step) && _isFunction(obj.result));
 }
 
 function _transformer(value){
   var xf;
   if(isTransformer(value)){
     xf = value[symTransformer];
-    if(xf === undef){
+    if(xf === void 0){
       xf = value;
     }
   }
@@ -49,12 +49,16 @@ function _curry2(fn) {
 }
 
 
-module.exports = _curry2(function _map(fn, list) {
+var map = _curry2(function _map(fn, list) {
+    // Functor case
     if (_hasMethod('map', list)) {
         return list.map(fn);
-    } else if(_isTransformer(list)){
+    }
+    // Transducer case
+    if(_isTransformer(list)){
         return new Map(fn, list);
     }
+    // Array case (yes, I know it's a functor...)
     var idx = -1, len = list.length, result = new Array(len);
     while (++idx < len) {
         result[idx] = fn(list[idx]);
