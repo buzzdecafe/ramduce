@@ -10,6 +10,7 @@
     "url": "git://github.com/ramda/ramduce.git"
   },
   "scripts": {
+    "test": "mocha"
   },
   "dependencies": {
     "ramda": "latest"

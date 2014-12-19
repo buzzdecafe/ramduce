@@ -110,7 +110,7 @@ Map.prototype.step = function(result, input) {
 };
 R.map = _curry2(function map(fn, ls) {
     // functor dispatch, excluding array
-    if (hasMethod('map', ls)) {
+    if (_hasMethod('map', ls)) {
         return ls.map(fn);
     }
     // iterables, incl. array
