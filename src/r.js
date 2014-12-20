@@ -9,8 +9,8 @@ function _hasMethod(name, obj) {
 
 function _isTransformer(obj) {
     return obj != null &&
-      (obj[symTransformer] != null) ||
-      (typeof obj.step === 'function' && typeof obj.result === 'function');
+      ((obj[symTransformer] != null) ||
+      (typeof obj.step === 'function' && typeof obj.result === 'function'));
 }
 
 function _noArgsException() {
