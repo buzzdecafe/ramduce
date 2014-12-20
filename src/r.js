@@ -13,6 +13,10 @@ function _isTransformer(obj) {
       (typeof obj.step === 'function' && typeof obj.result === 'function');
 }
 
+function _noArgsException() {
+     return new TypeError('Function called with no arguments');
+}
+
 function _curry2(fn) {
     return function(a, b) {
       switch (arguments.length) {
@@ -106,14 +110,14 @@ function iterableReduce(xf, acc, iter) {
     return xf.result(acc);
 };
 
-function appendTo(acc, x) {
-    return acc.concat(x);
+
+var appendXf = {
+    step: function appendTo(acc, x) {
+        return acc.concat(x);
+    },
+    result: function I(x) { return x; }
 }
 
-function I(x) { return x; }
-
-function add1(x) { return x + 1; }
-var ls =  [1,2,3,4];
 
 //-----------------------------------------------
 // MAPPING
@@ -135,7 +139,7 @@ R.map = _curry2(function map(fn, ls) {
     if (_isTransformer(ls)) {
         return new Map(fn, ls);
     }
-    return R.reduce(new Map(fn, {step: appendTo, result: I}), [], ls);
+    return R.reduce(new Map(fn, appendXf), [], ls);
 });
 //-----------------------------------------------
 
@@ -151,7 +155,14 @@ Filter.prototype.step = function(result, input) {
     return this.f(input) ? this.xf.step(result, input) : result;
 };
 R.filter = _curry2(function(fn, ls) {
-    return new Filter(fn, ls);
+    // functor dispatch, excluding array
+    if (_hasMethod('filter', ls)) {
+        return ls.filter(fn);
+    }
+    if (_isTransformer(ls)) {
+        return new Filter(fn, ls);
+    }
+    return R.reduce(new Filter(fn, appendXf), [], ls);
 });
 //-----------------------------------------------
 
@@ -168,7 +179,10 @@ Take.prototype.step = function(acc, x) {
         x.__transducers_reduced__ ? x : {value: x, __transducers_reduced__: true};
 };
 R.take = _curry2(function take(n, ls) {
-    return new Take(n, ls);
+    if (_isTransformer(ls)) {
+        return new Take(n, ls);
+    }
+    return R.reduce(new Take(n, appendXf), [], ls);
 });
 //-----------------------------------------------
 
