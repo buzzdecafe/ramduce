@@ -1,7 +1,16 @@
 var R = {};
 
+var symbolExists = typeof Symbol !== 'undefined',
+    symTransformer = symbolExists ? Symbol('transformer') : '@@transformer';
+
 function _hasMethod(name, obj) {
      return obj != null && !Array.isArray(obj) && typeof obj[name] === 'function'
+}
+
+function _isTransformer(obj) {
+    return obj != null &&
+      (obj[symTransformer] != null) ||
+      (typeof obj.step === 'function' && typeof obj.result === 'function');
 }
 
 function _curry2(fn) {
@@ -97,12 +106,21 @@ function iterableReduce(xf, acc, iter) {
     return xf.result(acc);
 };
 
+function appendTo(acc, x) {
+    return acc.concat(x);
+}
+
+function I(x) { return x; }
+
+function add1(x) { return x + 1; }
+var ls =  [1,2,3,4];
+
 //-----------------------------------------------
 // MAPPING
-var Map = _curry2(function Map(f, xf) {
+var Map = function Map(f, xf) {
     this.f = f;
     this.xf = xf;
-});
+};
 Map.prototype.init = init;
 Map.prototype.result = result;
 Map.prototype.step = function(result, input) {
@@ -114,16 +132,19 @@ R.map = _curry2(function map(fn, ls) {
         return ls.map(fn);
     }
     // iterables, incl. array
-    return new Map(fn, ls);
+    if (_isTransformer(ls)) {
+        return new Map(fn, ls);
+    }
+    return R.reduce(new Map(fn, {step: appendTo, result: I}), [], ls);
 });
 //-----------------------------------------------
 
 //-----------------------------------------------
 // FILTERING
-var Filter = _curry2(function Filter(f, xf) {
+var Filter = function Filter(f, xf) {
     this.f = f;
     this.xf = xf;
-});
+};
 Filter.prototype.init = init;
 Filter.prototype.result = result;
 Filter.prototype.step = function(result, input) {
@@ -136,10 +157,10 @@ R.filter = _curry2(function(fn, ls) {
 
 //-----------------------------------------------
 // TAKING
-var Take = _curry2(function Take(n, ls) {
+var Take = function Take(n, ls) {
     this.n = n;
     this.xf = ls;
-});
+};
 Take.prototype.init = init;
 Take.prototype.result = result;
 Take.prototype.step = function(acc, x) {
