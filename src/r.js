@@ -1,7 +1,8 @@
 var R = {};
 
 var symbolExists = typeof Symbol !== 'undefined',
-    symTransformer = symbolExists ? Symbol('transformer') : '@@transformer';
+    symTransformer = symbolExists ? Symbol('transformer') : '@@transformer',
+    symIterator = symbolExists ? Symbol('iterator') : '@@iterator';
 
 function _hasMethod(name, obj) {
      return obj != null && !Array.isArray(obj) && typeof obj[name] === 'function'
@@ -95,8 +96,8 @@ function arrayReduce(xf, acc, ls) {
 }
 
 function iterableReduce(xf, acc, iter) {
-    if(iter["@@iterator"]) {
-        iter = iter["@@iterator"]();
+    if(iter[symIterator]) {
+        iter = iter[symIterator]();
     }
     var step = iter.next();
     while(!step.done) {
