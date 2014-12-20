@@ -114,7 +114,7 @@ function iterableReduce(xf, acc, iter) {
 
 var appendXf = {
     step: function appendTo(acc, x) {
-        return acc.concat(x);
+        return acc.concat([x]);
     },
     result: function I(x) { return x; }
 }
