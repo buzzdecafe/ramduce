@@ -247,6 +247,7 @@ function _compose(f, g) {
 }
 
 var compose = _createComposer(_compose);
+R.compose = compose;
 //-----------------------------------------------
 
 
