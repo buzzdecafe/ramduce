@@ -1,6 +1,7 @@
 var assert = require('assert');
 
-var R = require('../src/r');
+var TEST_TYPE = process.env.TEST_TYPE,
+    R = require(TEST_TYPE ? '../src/r.'+TEST_TYPE : '../src/r');
 
 
 describe('filter', function() {
