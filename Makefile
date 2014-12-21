@@ -10,4 +10,9 @@ test-w:
 		--growl \
 		--watch
 
+test-transduce-compose: export TEST_TYPE=transduceCompose
+test-transduce-compose:
+	@NODE_ENV=test ./node_modules/.bin/mocha \
+	--reporter $(REPORTER) \
+
 .PHONY: test test-w
