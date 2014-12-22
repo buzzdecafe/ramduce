@@ -112,11 +112,9 @@ Map.prototype.step = function(result, input) {
     return this.xf.step(result, this.f(input));
 };
 
-function xmap(f) {
-  return function(xf){
-    return new Map(f, xf);
-  };
-}
+var xmap = _curry2(function(f, xf) {
+  return new Map(f, xf);
+});
 R.map = _curry2(_dispatchable('map', xmap));
 
 //-----------------------------------------------
@@ -132,11 +130,9 @@ Filter.prototype.result = result;
 Filter.prototype.step = function(result, input) {
     return this.f(input) ? this.xf.step(result, input) : result;
 };
-function xfilter(f) {
-  return function(xf){
-    return new Filter(f, xf);
-  };
-}
+var xfilter = _curry2(function(f, xf) {
+  return new Filter(f, xf);
+});
 R.filter = _curry2(_dispatchable('filter', xfilter));
 //-----------------------------------------------
 
@@ -152,11 +148,9 @@ Take.prototype.step = function(acc, x) {
     return this.n-- > 0 ? this.xf.step(acc, x) :
         x.__transducers_reduced__ ? x : {value: x, __transducers_reduced__: true};
 };
-function xtake(n){
-  return function(xf){
-    return new Take(n, xf);
-  };
-}
+var xtake = _curry2(function xtake(n, xf){
+  return new Take(n, xf);
+});
 R.take = _curry2(_dispatchable('take', xtake));
 
 //-----------------------------------------------
