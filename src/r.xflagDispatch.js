@@ -18,6 +18,23 @@ var R = {},
     compose = rlib.compose,
     slice = [].slice;
 
+var _appendXfArray = {
+    step: appendTo,
+    result: identity
+};
+
+var _appendXfString = {
+    step: function(acc, x){
+      return acc + x;
+    },
+    result: identity
+};
+
+var _appendXfObject = {
+    step: mixin,
+    result: identity
+};
+
 function _appendXf(obj){
   // something like this...
   // from github.com/transduce/transformer-protocol
@@ -27,21 +44,21 @@ function _appendXf(obj){
     if(xf === void 0){
       xf = obj;
     }
-  } else if(typeof obj === 'function'){
-    // might want to skip FunctionTransformer in  Ramda
-    xf = new FunctionTransformer(obj);
-  } else if(Array.isArray(obj)){
-    xf = new ArrayTransformer(obj);
-  } else if(is(String)){
-    xf = new StringTransformer(obj);
-  } else if(is(Object)){
-    xf = new ObjectTransformer(obj);
   }
 
-  if(xf === void 0){
-    throw new Error('Cannot create transformer for '+obj);
+  if(Array.isArray(obj)){
+    return _appendXfArray;
   }
-  return xf;
+
+  if(is(String)){
+    return _appendXfString;
+  }
+
+  if(is(Object)){
+    return _appendXfObject;
+  }
+
+  throw new Error('Cannot create transformer for '+obj);
 }
 R.appendXf = _appendXf;
 
@@ -176,60 +193,4 @@ R.xCompose = function xf_compose() {
 
 R.compose = compose;
 //-----------------------------------------------
-
-// Pushes value on array, using optional constructor arg as default, or [] if not provided
-// init will clone the default
-// step will push input onto array and return result
-// result is identity
-function ArrayTransformer(arr){
-  this.arrDefault = arr === void 0 ? [] : arr;
-}
-ArrayTransformer.prototype.init = function(){
-  return slice.call(this.arrDefault);
-};
-ArrayTransformer.prototype.step = appendTo;
-ArrayTransformer.prototype.result = identity;
-
-// Turns a step function into a transfomer with init, step, result (init not supported and will error)
-// Like transducers-js Wrap
-function FunctionTransformer(step){
-  this.step = step;
-}
-FunctionTransformer.prototype.init = function(){
-  throw new Error('Cannot init wrapped function, use proper transformer instead');
-};
-FunctionTransformer.prototype.step = function(result, input){
-  return this.step(result, input);
-};
-FunctionTransformer.prototype.result = identity;
-
-// Appends value onto string, using optional constructor arg as default, or '' if not provided
-// init will return the default
-// step will append input onto string and return result
-// result is identity
-function StringTransformer(str){
-  this.strDefault = str === void 0 ? '' : str;
-}
-StringTransformer.prototype.init = function(){
-  return this.strDefault;
-};
-StringTransformer.prototype.step = function(acc, x){
-  return acc + x;
-};
-StringTransformer.prototype.result = identity;
-
-// Merges value into object, using optional constructor arg as default, or {} if not provided
-// init will clone the default
-// step will merge input into object and return result
-// result is identity
-function ObjectTransformer(obj){
-  this.objDefault = obj === void 0 ? {} : mixin({}, obj);
-}
-ObjectTransformer.prototype.init = function(){
-  return mixin({}, this.objDefault);
-};
-ObjectTransformer.prototype.step = mixin;
-ObjectTransformer.prototype.result = identity;
-
-
 module.exports = R;
