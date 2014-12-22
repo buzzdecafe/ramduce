@@ -19,11 +19,17 @@ var R = {},
     slice = [].slice;
 
 var _appendXfArray = {
+    init: function(){
+      return [];
+    },
     step: appendTo,
     result: identity
 };
 
 var _appendXfString = {
+    init: function(){
+      return '';
+    },
     step: function(acc, x){
       return acc + x;
     },
@@ -31,6 +37,9 @@ var _appendXfString = {
 };
 
 var _appendXfObject = {
+    init: function(){
+      return {};
+    },
     step: mixin,
     result: identity
 };
@@ -65,16 +74,7 @@ R.appendXf = _appendXf;
 function _empty(obj){
   // something like this...
   // also see kevinbeaty/redispatch for potential late registration
-  if(Array.isArray(obj)){
-    return [];
-  } else if(isIterator(obj)){
-    return; // some empty appendable iterator
-  } else if(is(String)){
-    return '';
-  } else if(is(Object)){
-    return {};
-  }
-  throw new Error('Cannot create empty accumulator for '+obj);
+  return _appendXf(obj).init();
 }
 
 var _XF_FLAG = {};
