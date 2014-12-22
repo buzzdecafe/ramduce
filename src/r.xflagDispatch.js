@@ -38,12 +38,12 @@ var _appendXfObject = {
 function _appendXf(obj){
   // something like this...
   // from github.com/transduce/transformer-protocol
-  var xf;
   if(isTransformer(obj)){
-    xf = obj[symTransformer];
+    var xf = obj[symTransformer];
     if(xf === void 0){
       xf = obj;
     }
+    return xf;
   }
 
   if(Array.isArray(obj)){
