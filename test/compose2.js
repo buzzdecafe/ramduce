@@ -25,6 +25,15 @@ describe('compose', function() {
             // everything unfolds left to right
             // eg: -1 ^2 -> 1 +1 -> 2 +1 -> 3 +1 -> 4 *2 -> 8
             assert.deepEqual(R.transduce(combo, R.appendXf, [], input), [8, 6, 56]);
+        } else if (process.env.TEST_TYPE === 'xflagDispatch') {
+            var rNew = R.xCompose(R.map(add1), R.map(times2));
+            assert.deepEqual(R.transduce(rNew, R.appendXf(input), [], input), rOld(input));
+
+            var rNew2 = R.xCompose(R.map(square), R.map(add1), R.map(add1));
+            var combo = R.compose(rNew2, rNew);
+            // everything unfolds left to right
+            // eg: -1 ^2 -> 1 +1 -> 2 +1 -> 3 +1 -> 4 *2 -> 8
+            assert.deepEqual(R.transduce(combo, R.appendXf(input), [], input), [8, 6, 56]);
         } else {
             // something else..
         }
