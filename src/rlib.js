@@ -184,6 +184,20 @@ function _compose(f, g) {
     };
 }
 
+var compose = _createComposer(_compose);
+
+function pipe() {
+    return compose.apply(this, reverse(arguments));
+}
+function reverse(list) {
+    var idx = -1, length = list.length;
+    var pointer = length;
+    var result = new Array(length);
+    while (++idx < length) {
+        result[--pointer] = list[idx];
+    }
+    return result;
+}
 
 module.exports = {
   identity: identity,
@@ -192,7 +206,8 @@ module.exports = {
   appendXf: appendXf,
   arity: arity,
   arrayReduce: arrayReduce,
-  compose: _createComposer(_compose),
+  compose: compose,
+  pipe: pipe,
   init: init,
   iterableReduce: iterableReduce,
   result: result,

@@ -16,6 +16,7 @@ var R = {},
     init = rlib.init,
     result = rlib.result,
     compose = rlib.compose,
+    pipe = rlib.pipe,
     slice = [].slice;
 
 var _appendXfArray = {
@@ -47,6 +48,7 @@ var _appendXfObject = {
 function _appendXf(obj){
   // something like this...
   // from github.com/transduce/transformer-protocol
+  // also see kevinbeaty/redispatch for potential late registration
   if(isTransformer(obj)){
     var xf = obj[symTransformer];
     if(xf === void 0){
@@ -71,11 +73,10 @@ function _appendXf(obj){
 }
 R.appendXf = _appendXf;
 
-function _empty(obj){
-  // something like this...
-  // also see kevinbeaty/redispatch for potential late registration
-  return _appendXf(obj).init();
-}
+var _transduceDispatch = _curry2(function(xf, obj){
+    var appendXf = _appendXf(obj);
+    return transduce(xf, appendXf, appendXf.init(), obj);
+});
 
 var _XF_FLAG = {};
 function _dispatchable(name, xf, f) {
@@ -95,7 +96,7 @@ function _dispatchable(name, xf, f) {
         if(f != null) return f.apply(null, arguments);
 
         // Use xf to fold (or transduce)
-        return transduce(xf.apply(null, args), _appendXf(obj), _empty(obj), obj);
+        return _transduceDispatch(xf.apply(null, args), obj);
      };
 }
 
@@ -176,13 +177,28 @@ var transduce = R.transduce = _curry4(function(xf, fn, acc, ls) {
 //-----------------------------------------------
 
 //-----------------------------------------------
-var _xfConvert = function xf_convert(fn) {
+var _xfConvert = function xConvert(fn) {
     return fn(_XF_FLAG);
 };
 
-R.xCompose = function xf_compose() {
-    var funcs = R.map(_xfConvert, Array.prototype.slice.call(arguments));
+var _xCompose = R.xCompose = function xCompose() {
+    var funcs = R.map(_xfConvert, slice.call(arguments));
     return compose.apply(null, funcs);
+};
+
+var _xPipe = R.xPipe = function xPipe() {
+    var funcs = R.map(_xfConvert, slice.call(arguments));
+    return pipe.apply(null, funcs);
+};
+
+R.lazyCompose = function(){
+    // Use xPipe to reverse transducer composition so API matches a normal compose
+    return _transduceDispatch(_xPipe.apply(null, arguments));
+};
+
+R.lazyPipe = function(){
+    // Use xPipe to reverse transducer composition so API matches a normal compose
+    return _transduceDispatch(_xCompose.apply(null, arguments));
 };
 
 R.compose = compose;
