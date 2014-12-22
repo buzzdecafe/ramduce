@@ -3,14 +3,43 @@ var symbolExists = typeof Symbol !== 'undefined',
     symTransformer = symbolExists ? Symbol('transformer') : '@@transformer',
     symIterator = symbolExists ? Symbol('iterator') : '@@iterator';
 
+function identity(x) {
+    return x;
+}
+
+function appendTo(acc, x){
+    return acc.concat([x]);
+}
+
+var mixin = _curry2(function mixin(a, b) {
+    return _extend(_extend({}, a), b);
+});
+
+function _extend(destination, other) {
+    var props = Object.keys(other),
+        idx = -1, length = props.length;
+    while (++idx < length) {
+        destination[props[idx]] = other[props[idx]];
+    }
+    return destination;
+}
+
 function _hasMethod(name, obj) {
-     return obj != null && !Array.isArray(obj) && typeof obj[name] === 'function'
+     return obj != null && !Array.isArray(obj) && typeof obj[name] === 'function';
 }
 
 function _isTransformer(obj) {
     return obj != null &&
       ((obj[symTransformer] != null) ||
       (typeof obj.step === 'function' && typeof obj.result === 'function'));
+}
+
+function _isIterable(value) {
+  return (value[symIterator] !== void 0);
+}
+
+function _isIterator(value) {
+  return _isIterable(value) || typeof value.next === 'function';
 }
 
 function _noArgsException() {
@@ -101,22 +130,20 @@ function iterableReduce(xf, acc, iter) {
     var step = iter.next();
     while(!step.done) {
       acc = xf.step(acc, step.value);
-      if(iacc.__transducers_reduced__) {
+      if(acc.__transducers_reduced__) {
         acc = acc.value;
         break;
       }
       step = iter.next();
     }
     return xf.result(acc);
-};
+}
 
 
 var appendXf = {
-    step: function appendTo(acc, x) {
-        return acc.concat([x]);
-    },
-    result: function I(x) { return x; }
-}
+    step: appendTo,
+    result: identity
+};
 
 
 function arity(n, fn) {
@@ -159,6 +186,9 @@ function _compose(f, g) {
 
 
 module.exports = {
+  identity: identity,
+  appendTo: appendTo,
+  mixin: mixin,
   appendXf: appendXf,
   arity: arity,
   arrayReduce: arrayReduce,
@@ -166,10 +196,13 @@ module.exports = {
   init: init,
   iterableReduce: iterableReduce,
   result: result,
+  symTransformer: symTransformer,
   _curry2: _curry2,
   _curry3: _curry3,
   _curry4: _curry4,
   _hasMethod: _hasMethod,
   _isTransformer: _isTransformer,
+  _isIterable: _isIterable,
+  _isIterator: _isIterator,
   _noArgsException: _noArgsException
 };
