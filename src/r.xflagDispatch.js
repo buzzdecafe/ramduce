@@ -86,49 +86,41 @@ var _transduceDispatch = _curry2(function(xf, obj){
     return transduce(xf, appendXf, appendXf.init(), obj);
 });
 
-var _transduceLastValue = _curry3(function(xf, init, obj){
+var _transduceLastValue = _curry3(function(init, xf, obj){
     return transduce(xf, _appendXfLastValue, init, obj);
 });
 
+function _dispatchOne(xf, init){
+    return function(){
+        var transducer = xf.apply(null, arguments);
+        if(this === _XF_FLAG) return transducer;
+        return _transduceLastValue(init(), transducer, this);
+    };
+}
+
+function _dispatchMany(xf){
+    return function(){
+        var transducer = xf.apply(null, arguments);
+        if(this === _XF_FLAG) return transducer;
+        return _transduceDispatch(transducer, this);
+    };
+}
+
 var _XF_FLAG = {};
-function _dispatchable(name, xf, f) {
+function _dispatchable(name, f) {
     return function() {
         var length = arguments.length;
-        var obj = arguments[length - 1];
         var args = slice.call(arguments, 0, -1);
+        var obj = arguments[length - 1];
 
-        // xCompose case, return transducer
-        if(obj === _XF_FLAG) return xf.apply(null, args);
+        var fn = f;
+        if(_hasMethod(name, obj)){
+          fn = obj[name];
+        }
 
-        // functor case, call method on obj
-        if(_hasMethod(name, obj)) return obj[name].apply(obj, args);
-
-        // allow overriding xf with function if either xf is not provided
-        // or f can be more efficient.
-        if(f != null) return f.apply(null, arguments);
-
-        // Use xf to fold (or transduce)
-        return _transduceDispatch(xf.apply(null, args), obj);
+        return fn.apply(obj, args);
      };
 }
-
-function _dispatchableLastValue(name, xf, init) {
-    return function() {
-        var length = arguments.length;
-        var obj = arguments[length - 1];
-        var args = slice.call(arguments, 0, -1);
-
-        // xCompose case, return transducer
-        if(obj === _XF_FLAG) return xf.apply(null, args);
-
-        // functor case, call method on obj
-        if(_hasMethod(name, obj)) return obj[name].apply(obj, args);
-
-        // Use xf to fold (or transduce)
-        return _transduceLastValue(xf.apply(null, args), init(), obj);
-     };
-}
-
 
 //-----------------------------------------------
 // MAPPING
@@ -145,7 +137,7 @@ Map.prototype.step = function(result, input) {
 var xmap = _curry2(function(f, xf) {
   return new Map(f, xf);
 });
-R.map = _curry2(_dispatchable('map', xmap));
+R.map = _curry2(_dispatchable('map', _dispatchMany(xmap)));
 
 //-----------------------------------------------
 
@@ -163,7 +155,7 @@ Filter.prototype.step = function(result, input) {
 var xfilter = _curry2(function(f, xf) {
   return new Filter(f, xf);
 });
-R.filter = _curry2(_dispatchable('filter', xfilter));
+R.filter = _curry2(_dispatchable('filter', _dispatchMany(xfilter)));
 //-----------------------------------------------
 
 //-----------------------------------------------
@@ -181,7 +173,7 @@ Take.prototype.step = function(acc, x) {
 var xtake = _curry2(function xtake(n, xf){
   return new Take(n, xf);
 });
-R.take = _curry2(_dispatchable('take', xtake));
+R.take = _curry2(_dispatchable('take', _dispatchMany(xtake)));
 
 //-----------------------------------------------
 // FINDING
@@ -200,7 +192,7 @@ Find.prototype.step = function(acc, x) {
 var xfind = _curry2(function xfind(f, xf){
   return new Find(f, xf);
 });
-R.find = _curry2(_dispatchableLastValue('find', xfind, always()));
+R.find = _curry2(_dispatchable('find', _dispatchOne(xfind, always())));
 
 //-----------------------------------------------
 
