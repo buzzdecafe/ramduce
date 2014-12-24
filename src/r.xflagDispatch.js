@@ -47,6 +47,12 @@ var _appendXfObject = {
     result: identity
 };
 
+var _appendXfLastValue = {
+    init: function(){},
+    step: function(acc, x){ return x; },
+    result: identity
+};
+
 function _appendXf(obj){
   // something like this...
   // from github.com/transduce/transformer-protocol
@@ -99,6 +105,23 @@ function _dispatchable(name, xf, f) {
 
         // Use xf to fold (or transduce)
         return _transduceDispatch(xf.apply(null, args), obj);
+     };
+}
+
+function _dispatchableLastValue(name, xf, init) {
+    return function() {
+        var length = arguments.length;
+        var obj = arguments[length - 1];
+        var args = slice.call(arguments, 0, -1);
+
+        // xCompose case, return transducer
+        if(obj === _XF_FLAG) return xf.apply(null, args);
+
+        // functor case, call method on obj
+        if(_hasMethod(name, obj)) return obj[name].apply(obj, args);
+
+        // Use xf to fold (or transduce)
+        return transduce(xf.apply(null, args), _appendXfLastValue, init(), obj);
      };
 }
 
@@ -157,6 +180,25 @@ var xtake = _curry2(function xtake(n, xf){
 R.take = _curry2(_dispatchable('take', xtake));
 
 //-----------------------------------------------
+// FINDING
+function Find(f, xf) {
+    this.f = f;
+    this.xf = xf;
+}
+Find.prototype.init = init;
+Find.prototype.result = result;
+Find.prototype.step = function(acc, x) {
+    if(this.f(x)){
+      return reduced(x);
+    }
+    return acc;
+};
+var xfind = _curry2(function xfind(f, xf){
+  return new Find(f, xf);
+});
+R.find = _curry2(_dispatchableLastValue('find', xfind, always()));
+
+//-----------------------------------------------
 
 //-----------------------------------------------
 // FOLDING
@@ -176,6 +218,7 @@ R.foldl = _curry3(function(fn, acc, ls) {
 var transduce = R.transduce = _curry4(function(xf, fn, acc, ls) {
     return R.foldl(xf(fn), acc, ls);
 });
+
 //-----------------------------------------------
 
 //-----------------------------------------------
