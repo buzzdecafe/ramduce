@@ -86,6 +86,10 @@ var _transduceDispatch = _curry2(function(xf, obj){
     return transduce(xf, appendXf, appendXf.init(), obj);
 });
 
+var _transduceLastValue = _curry3(function(xf, init, obj){
+    return transduce(xf, _appendXfLastValue, init, obj);
+});
+
 var _XF_FLAG = {};
 function _dispatchable(name, xf, f) {
     return function() {
@@ -121,7 +125,7 @@ function _dispatchableLastValue(name, xf, init) {
         if(_hasMethod(name, obj)) return obj[name].apply(obj, args);
 
         // Use xf to fold (or transduce)
-        return transduce(xf.apply(null, args), _appendXfLastValue, init(), obj);
+        return _transduceLastValue(xf.apply(null, args), init(), obj);
      };
 }
 
