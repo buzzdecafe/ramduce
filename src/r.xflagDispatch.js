@@ -191,12 +191,12 @@ var _xPipe = R.xPipe = function xPipe() {
     return pipe.apply(null, funcs);
 };
 
-R.lazyCompose = function(){
+R.stepCompose = function(){
     // Use xPipe to reverse transducer composition so API matches a normal compose
     return _transduceDispatch(_xPipe.apply(null, arguments));
 };
 
-R.lazyPipe = function(){
+R.stepPipe = function(){
     // Use xPipe to reverse transducer composition so API matches a normal compose
     return _transduceDispatch(_xCompose.apply(null, arguments));
 };
