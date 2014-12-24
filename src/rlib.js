@@ -7,6 +7,13 @@ function identity(x) {
     return x;
 }
 
+function always(val) {
+    return function() {
+        return val;
+    };
+}
+
+
 function appendTo(acc, x){
     return acc.concat([x]);
 }
@@ -115,7 +122,7 @@ function arrayReduce(xf, acc, ls) {
     var i = -1, len = ls.length;
     while(++i < len) {
         acc = xf.step(acc, ls[i]);
-        if (acc.__transducers_reduced__) {
+        if (acc && acc.__transducers_reduced__) {
             acc = acc.value;
             break;
         }
@@ -130,13 +137,20 @@ function iterableReduce(xf, acc, iter) {
     var step = iter.next();
     while(!step.done) {
       acc = xf.step(acc, step.value);
-      if(acc.__transducers_reduced__) {
+      if(acc && acc.__transducers_reduced__) {
         acc = acc.value;
         break;
       }
       step = iter.next();
     }
     return xf.result(acc);
+}
+
+function reduced(value){
+  return {
+    value: value,
+    __transducers_reduced__: true
+  };
 }
 
 
@@ -201,6 +215,7 @@ function reverse(list) {
 
 module.exports = {
   identity: identity,
+  always: always,
   appendTo: appendTo,
   mixin: mixin,
   appendXf: appendXf,
@@ -210,6 +225,7 @@ module.exports = {
   pipe: pipe,
   init: init,
   iterableReduce: iterableReduce,
+  reduced: reduced,
   result: result,
   symTransformer: symTransformer,
   _curry2: _curry2,
