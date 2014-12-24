@@ -189,7 +189,7 @@ Find.prototype.init = init;
 Find.prototype.result = result;
 Find.prototype.step = function(acc, x) {
     if(this.f(x)){
-      return reduced(x);
+      return reduced(this.xf.step(acc, x));
     }
     return acc;
 };
