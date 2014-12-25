@@ -76,13 +76,13 @@ function _appendXf(obj){
 R.appendXf = _appendXf;
 
 function LastValue(init){
-  if(typeof init === 'function'){
-    // allows overriding init with function
-    // this branch might not be necessary...
-    this.init = init;
-  } else {
-    this.initialValue = init;
-  }
+  this.initialValue = init;
+
+  // OR, allow overriding init as function if necessary
+  // Can use always(-1) etc. instead of -1 constant
+  //if(typeof init === 'function'){
+  //  this.init = init;
+  // }
 }
 LastValue.prototype.init = function(){ return this.initialValue; };
 LastValue.prototype.step = function(acc, x){ return x; };
