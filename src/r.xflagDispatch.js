@@ -47,12 +47,6 @@ var _appendXfObject = {
     result: identity
 };
 
-var _appendXfLastValue = {
-    init: function(){},
-    step: function(acc, x){ return x; },
-    result: identity
-};
-
 function _appendXf(obj){
   // something like this...
   // from github.com/transduce/transformer-protocol
@@ -81,28 +75,34 @@ function _appendXf(obj){
 }
 R.appendXf = _appendXf;
 
-var _transduceDispatch = _curry2(function(xf, obj){
-    var appendXf = _appendXf(obj);
-    return transduce(xf, appendXf, appendXf.init(), obj);
-});
+function LastValue(init){
+  if(typeof init === 'function'){
+    // allows overriding init with function
+    // this branch might not be necessary...
+    this.init = init;
+  } else {
+    this.initialValue = init;
+  }
+}
+LastValue.prototype.init = function(){ return this.initialValue; };
+LastValue.prototype.step = function(acc, x){ return x; };
+LastValue.prototype.result = identity;
 
-var _transduceLastValue = _curry3(function(init, xf, obj){
-    return transduce(xf, _appendXfLastValue, init, obj);
-});
-
-function _dispatchOne(xf, init){
-    return function(){
-        var transducer = xf.apply(null, arguments);
-        if(this === _XF_FLAG) return transducer;
-        return _transduceLastValue(init(), transducer, this);
-    };
+function _appendXfLastValue(init){
+  // wrap in always because dispatch below calls function with
+  // obj to match _appendXf(obj)
+  return always(new LastValue(init));
 }
 
-function _dispatchMany(xf){
+function _dispatch(xf, appendXf){
+    appendXf = appendXf || _appendXf;
     return function(){
         var transducer = xf.apply(null, arguments);
-        if(this === _XF_FLAG) return transducer;
-        return _transduceDispatch(transducer, this);
+        var obj = this;
+        if(obj === _XF_FLAG) return transducer;
+
+        var stepper = appendXf(obj);
+        return _foldl(transducer(stepper), stepper.init(), obj);
     };
 }
 
@@ -137,7 +137,7 @@ Map.prototype.step = function(result, input) {
 var xmap = _curry2(function(f, xf) {
   return new Map(f, xf);
 });
-R.map = _curry2(_dispatchable('map', _dispatchMany(xmap)));
+R.map = _curry2(_dispatchable('map', _dispatch(xmap)));
 
 //-----------------------------------------------
 
@@ -155,7 +155,7 @@ Filter.prototype.step = function(result, input) {
 var xfilter = _curry2(function(f, xf) {
   return new Filter(f, xf);
 });
-R.filter = _curry2(_dispatchable('filter', _dispatchMany(xfilter)));
+R.filter = _curry2(_dispatchable('filter', _dispatch(xfilter)));
 //-----------------------------------------------
 
 //-----------------------------------------------
@@ -173,7 +173,7 @@ Take.prototype.step = function(acc, x) {
 var xtake = _curry2(function xtake(n, xf){
   return new Take(n, xf);
 });
-R.take = _curry2(_dispatchable('take', _dispatchMany(xtake)));
+R.take = _curry2(_dispatchable('take', _dispatch(xtake)));
 
 //-----------------------------------------------
 // FINDING
@@ -192,13 +192,14 @@ Find.prototype.step = function(acc, x) {
 var xfind = _curry2(function xfind(f, xf){
   return new Find(f, xf);
 });
-R.find = _curry2(_dispatchable('find', _dispatchOne(xfind, always())));
+R.find = _curry2(_dispatchable('find', _dispatch(xfind, _appendXfLastValue(void 0))));
 
 //-----------------------------------------------
 
 //-----------------------------------------------
 // FOLDING
-R.foldl = _curry3(function(fn, acc, ls) {
+R.foldl = _curry3(_foldl);
+function _foldl(fn, acc, ls) {
     if (Array.isArray(ls)) {
         return arrayReduce(fn, acc, ls);
     } else if (isIterator(ls)) {
@@ -206,40 +207,30 @@ R.foldl = _curry3(function(fn, acc, ls) {
     } else {
         throw new Error("didn't account for " + typeof ls);
     }
-});
+}
 //-----------------------------------------------
 
 //-----------------------------------------------
 // TRANSDUCING
-var transduce = R.transduce = _curry4(function(xf, fn, acc, ls) {
-    return R.foldl(xf(fn), acc, ls);
+R.transduce = _curry4(function(xf, fn, acc, ls) {
+    return _foldl(xf(fn), acc, ls);
 });
 
 //-----------------------------------------------
 
 //-----------------------------------------------
-var _xfConvert = function xConvert(fn) {
+function _xfConvert(fn) {
     return fn(_XF_FLAG);
-};
+}
 
-var _xCompose = R.xCompose = function xCompose() {
+R.tCompose = function xCompose() {
     var funcs = R.map(_xfConvert, slice.call(arguments));
     return compose.apply(null, funcs);
 };
 
-var _xPipe = R.xPipe = function xPipe() {
+R.tPipe = function xPipe() {
     var funcs = R.map(_xfConvert, slice.call(arguments));
     return pipe.apply(null, funcs);
-};
-
-R.stepCompose = function(){
-    // Use xPipe to reverse transducer composition so API matches a normal compose
-    return _transduceDispatch(_xPipe.apply(null, arguments));
-};
-
-R.stepPipe = function(){
-    // Use xPipe to reverse transducer composition so API matches a normal compose
-    return _transduceDispatch(_xCompose.apply(null, arguments));
 };
 
 R.compose = compose;

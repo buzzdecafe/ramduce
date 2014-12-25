@@ -23,20 +23,4 @@ describe('compose', function() {
         assert.deepEqual(rNew(input), rOld(input));
         assert.deepEqual(rNew(input), [2, 6, 6, 10]);
     });
-
-    if(typeof R.stepCompose === 'function'){
-        it('stepCompose should maintain composition order for arrays', function() {
-            var rOld = r.compose(r.filter(isOdd), r.map(add1));
-            var rNew = R.stepCompose(R.filter(isOdd), R.map(add1));
-            var input = [-1, 0, 2, 2, 3, 3, 4, 5];
-            assert.deepEqual(rNew(input), rOld(input));
-            assert.deepEqual(rNew(input), [1, 3, 3, 5]);
-
-            rOld = r.compose(r.map(times2), r.filter(isOdd), r.map(add1));
-            rNew = R.stepCompose(R.map(times2), R.filter(isOdd), R.map(add1));
-            input = [-1, 0, 2, 2, 3, 3, 4, 5];
-            assert.deepEqual(rNew(input), rOld(input));
-            assert.deepEqual(rNew(input), [2, 6, 6, 10]);
-        });
-    }
 });
