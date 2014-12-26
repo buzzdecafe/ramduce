@@ -106,9 +106,13 @@ function _dispatch(xf, appendXf){
     };
 }
 
+function curryN(n, f){
+  return _curry2(f);
+}
+
 var _XF_FLAG_ = {};
-function _dispatchable(name, f) {
-    return function() {
+function _dispatchableN(n, name, f) {
+    var d = curryN(n, function() {
         var length = arguments.length;
         var args = slice.call(arguments, 0, -1);
         var obj = arguments[length - 1];
@@ -119,7 +123,16 @@ function _dispatchable(name, f) {
         }
 
         return fn.apply(obj, args);
-     };
+     });
+
+    return function(){
+      if(arguments.length === n - 1){
+        var marked = d.apply(null, arguments);
+        marked._XF_FLAG_ = _XF_FLAG_;
+        return marked;
+      }
+      return d.apply(null, arguments);
+    };
 }
 
 //-----------------------------------------------
@@ -137,7 +150,7 @@ Map.prototype.step = function(result, input) {
 var xmap = _curry2(function(f, xf) {
   return new Map(f, xf);
 });
-R.map = _curry2(_dispatchable('map', _dispatch(xmap)));
+R.map = _dispatchableN(2, 'map', _dispatch(xmap));
 
 //-----------------------------------------------
 
@@ -155,7 +168,7 @@ Filter.prototype.step = function(result, input) {
 var xfilter = _curry2(function(f, xf) {
   return new Filter(f, xf);
 });
-R.filter = _curry2(_dispatchable('filter', _dispatch(xfilter)));
+R.filter = _dispatchableN(2, 'filter', _dispatch(xfilter));
 //-----------------------------------------------
 
 //-----------------------------------------------
@@ -173,7 +186,7 @@ Take.prototype.step = function(acc, x) {
 var xtake = _curry2(function xtake(n, xf){
   return new Take(n, xf);
 });
-R.take = _curry2(_dispatchable('take', _dispatch(xtake)));
+R.take = _dispatchableN(2, 'take', _dispatch(xtake));
 
 //-----------------------------------------------
 // FINDING
@@ -192,7 +205,7 @@ Find.prototype.step = function(acc, x) {
 var xfind = _curry2(function xfind(f, xf){
   return new Find(f, xf);
 });
-R.find = _curry2(_dispatchable('find', _dispatch(xfind, _appendXfLastValue(void 0))));
+R.find = _dispatchableN(2, 'find', _dispatch(xfind, _appendXfLastValue(void 0)));
 
 //-----------------------------------------------
 
@@ -220,7 +233,7 @@ R.transduce = _curry4(function(xf, fn, acc, ls) {
 
 //-----------------------------------------------
 function _xfConvert(fn) {
-    return fn(_XF_FLAG_);
+    return fn._XF_FLAG_ === _XF_FLAG_ ? fn(_XF_FLAG_) : fn;
 }
 
 R.tCompose = function xCompose() {
