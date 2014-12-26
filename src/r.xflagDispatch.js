@@ -4,6 +4,7 @@ var R = {},
     _curry2 = rlib._curry2,
     _curry3 = rlib._curry3,
     _curry4 = rlib._curry4,
+    _noArgsException = rlib._noArgsException,
     arrayReduce = rlib.arrayReduce,
     iterableReduce = rlib.iterableReduce,
     reduced = rlib.reduced,
@@ -106,13 +107,9 @@ function _dispatch(xf, appendXf){
     };
 }
 
-function curryN(n, f){
-  return _curry2(f);
-}
-
 var _XF_FLAG_ = {};
 function _dispatchableN(n, name, f) {
-    var d = curryN(n, function() {
+    var d = function() {
         var length = arguments.length;
         var args = slice.call(arguments, 0, -1);
         var obj = arguments[length - 1];
@@ -123,18 +120,51 @@ function _dispatchableN(n, name, f) {
         }
 
         return fn.apply(obj, args);
-     });
+   };
 
-    return function(){
-      if(arguments.length === n - 1){
-        var marked = d.apply(null, arguments);
-        marked._XF_FLAG_ = _XF_FLAG_;
-        return marked;
+    switch(n){
+      case 2: return _dispatchable2(d);
+      case 3: return _dispatchable3(d);
+    }
+}
+
+function _dispatchable2(fn) {
+    return function(a, b) {
+      switch (arguments.length) {
+        case 0:
+          throw _noArgsException();
+        case 1:
+          var f =  function(b) {
+            return fn(a, b);
+          };
+          f._XF_FLAG_ = _XF_FLAG_;
+          return f;
+        default:
+          return fn(a, b);
       }
-      return d.apply(null, arguments);
     };
 }
 
+function _dispatchable3(fn) {
+    return function(a, b, c) {
+      switch (arguments.length) {
+        case 0:
+          throw _noArgsException();
+        case 1:
+          return _curry2(function(b, c) {
+            return fn(a, b, c);
+          });
+        case 2:
+          var f = function(c) {
+            return fn(a, b, c);
+          };
+          f._XF_FLAG_ = _XF_FLAG_;
+          return f;
+        default:
+          return fn(a, b, c);
+      }
+    };
+}
 //-----------------------------------------------
 // MAPPING
 function Map(f, xf) {
