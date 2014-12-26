@@ -99,14 +99,14 @@ function _dispatch(xf, appendXf){
     return function(){
         var transducer = xf.apply(null, arguments);
         var obj = this;
-        if(obj === _XF_FLAG) return transducer;
+        if(obj === _XF_FLAG_) return transducer;
 
         var stepper = appendXf(obj);
         return _foldl(transducer(stepper), stepper.init(), obj);
     };
 }
 
-var _XF_FLAG = {};
+var _XF_FLAG_ = {};
 function _dispatchable(name, f) {
     return function() {
         var length = arguments.length;
@@ -220,7 +220,7 @@ R.transduce = _curry4(function(xf, fn, acc, ls) {
 
 //-----------------------------------------------
 function _xfConvert(fn) {
-    return fn(_XF_FLAG);
+    return fn(_XF_FLAG_);
 }
 
 R.tCompose = function xCompose() {
