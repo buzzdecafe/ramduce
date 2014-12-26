@@ -111,13 +111,15 @@ var _XF_FLAG_ = {};
 function _dispatchableN(n, name, f) {
     var d = function() {
         var args = slice.call(arguments);
-        return function(obj){
+        var dispatchList = function(obj){
           var fn = f;
           if(_hasMethod(name, obj)){
             fn = obj[name];
           }
           return fn.apply(obj, args);
         };
+        dispatchList.__RAMDA_XF_FLAG_ = _XF_FLAG_;
+        return dispatchList;
    };
 
     switch(n){
@@ -125,11 +127,6 @@ function _dispatchableN(n, name, f) {
       case 3: return _dispatchable3(d);
       default: throw new Error('Must add _dispatchable'+n);
     }
-}
-
-function _dispatchMark(fn){
-    fn.__RAMDA_XF_FLAG_ = _XF_FLAG_;
-    return fn;
 }
 
 function _dispatchMarkConvert(fn) {
@@ -142,9 +139,7 @@ function _dispatchable2(fn) {
         case 0:
           throw _noArgsException();
         case 1:
-          return _dispatchMark(function(b){
-            return fn(a)(b);
-          });
+          return fn(a);
         default:
           return fn(a)(b);
       }
@@ -161,9 +156,7 @@ function _dispatchable3(fn) {
             return fn(a, b)(c);
           });
         case 2:
-          return _dispatchMark(function(c) {
-            return fn(a, b)(c);
-          });
+          return fn(a, b);
         default:
           return fn(a, b)(c);
       }
