@@ -96,11 +96,11 @@ function _appendXfLastValue(init){
 }
 
 var _XF_FLAG_ = {};
-function _dispatch(xf, appendXf){
-    appendXf = appendXf || _appendXf;
+
+function _transduceDispatch(xf, appendXf){
     return function(){
-        var transducer = xf.apply(null, arguments);
         var obj = this;
+        var transducer = xf.apply(null, arguments);
         if(obj === _XF_FLAG_) return transducer;
 
         var stepper = appendXf(obj);
@@ -108,67 +108,71 @@ function _dispatch(xf, appendXf){
     };
 }
 
-
-function _dispatchable(name, f) {
-  return function _dispatchArgs(){
-    var args = slice.call(arguments);
-
-    function _dispatchList(obj){
-      var fn = f;
-      if(_hasMethod(name, obj)){
-        fn = obj[name];
-      }
-      return fn.apply(obj, args);
-    }
-
-    _dispatchList.__RAMDA_XF_FLAG_ = _XF_FLAG_;
-    return _dispatchList;
-  };
-}
-
 function _dispatchMarkConvert(fn) {
     return fn.__RAMDA_XF_FLAG_ === _XF_FLAG_ ? fn(_XF_FLAG_) : fn;
 }
 
+var _dispatchableN = (function(){
+  function _dispatchableN(n, name, f) {
+      var fn = _dispatchable(name, f);
+      switch(n){
+        case 2: return _dispatchable2(fn);
+        case 3: return _dispatchable3(fn);
+        default: throw new Error('Must add _dispatchable'+n);
+      }
+  }
 
-function _dispatchableN(n, name, f) {
-    var fn = _dispatchable(name, f);
-    switch(n){
-      case 2: return _dispatchable2(fn);
-      case 3: return _dispatchable3(fn);
-      default: throw new Error('Must add _dispatchable'+n);
+  function _dispatchable(name, f){
+    return function _dispatchArgs(){
+      var args = slice.call(arguments);
+      function _dispatchList(obj){
+        return _dispatchableCall(name, f, args, obj);
+      }
+      _dispatchList.__RAMDA_XF_FLAG_ = _XF_FLAG_;
+      return _dispatchList;
+    };
+  }
+
+  function _dispatchableCall(name, f, args, obj){
+    var fn = f;
+    if(_hasMethod(name, obj)){
+      fn = obj[name];
     }
-}
+    return fn.apply(obj, args);
+  }
 
-function _dispatchable2(fn) {
-    return function(a, b) {
-      switch (arguments.length) {
-        case 0:
-          throw _noArgsException();
-        case 1:
-          return fn(a);
-        default:
-          return fn(a)(b);
-      }
-    };
-}
+  function _dispatchable2(fn) {
+      return function(a, b) {
+        switch (arguments.length) {
+          case 0:
+            throw _noArgsException();
+          case 1:
+            return fn(a);
+          default:
+            return fn(a)(b);
+        }
+      };
+  }
 
-function _dispatchable3(fn) {
-    return function(a, b, c) {
-      switch (arguments.length) {
-        case 0:
-          throw _noArgsException();
-        case 1:
-          return _curry2(function(b, c) {
+  function _dispatchable3(fn) {
+      return function(a, b, c) {
+        switch (arguments.length) {
+          case 0:
+            throw _noArgsException();
+          case 1:
+            return _curry2(function(b, c) {
+              return fn(a, b)(c);
+            });
+          case 2:
+            return fn(a, b);
+          default:
             return fn(a, b)(c);
-          });
-        case 2:
-          return fn(a, b);
-        default:
-          return fn(a, b)(c);
-      }
-    };
-}
+        }
+      };
+  }
+
+  return _dispatchableN;
+})();
 //-----------------------------------------------
 // MAPPING
 function Map(f, xf) {
@@ -184,7 +188,7 @@ Map.prototype.step = function(result, input) {
 var xmap = _curry2(function(f, xf) {
   return new Map(f, xf);
 });
-R.map = _dispatchableN(2, 'map', _dispatch(xmap));
+R.map = _dispatchableN(2, 'map', _transduceDispatch(xmap, _appendXf));
 
 //-----------------------------------------------
 
@@ -202,7 +206,7 @@ Filter.prototype.step = function(result, input) {
 var xfilter = _curry2(function(f, xf) {
   return new Filter(f, xf);
 });
-R.filter = _dispatchableN(2, 'filter', _dispatch(xfilter));
+R.filter = _dispatchableN(2, 'filter', _transduceDispatch(xfilter, _appendXf));
 //-----------------------------------------------
 
 //-----------------------------------------------
@@ -220,7 +224,7 @@ Take.prototype.step = function(acc, x) {
 var xtake = _curry2(function xtake(n, xf){
   return new Take(n, xf);
 });
-R.take = _dispatchableN(2, 'take', _dispatch(xtake));
+R.take = _dispatchableN(2, 'take', _transduceDispatch(xtake, _appendXf));
 
 //-----------------------------------------------
 // FINDING
@@ -239,7 +243,7 @@ Find.prototype.step = function(acc, x) {
 var xfind = _curry2(function xfind(f, xf){
   return new Find(f, xf);
 });
-R.find = _dispatchableN(2, 'find', _dispatch(xfind, _appendXfLastValue(void 0)));
+R.find = _dispatchableN(2, 'find', _transduceDispatch(xfind, _appendXfLastValue(void 0)));
 
 //-----------------------------------------------
 
