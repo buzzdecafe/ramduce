@@ -125,6 +125,7 @@ function _dispatchableN(n, name, f) {
     switch(n){
       case 2: return _dispatchable2(d);
       case 3: return _dispatchable3(d);
+      default: throw new Error('Must add _dispatchable'+n);
     }
 }
 
