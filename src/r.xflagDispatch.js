@@ -95,6 +95,7 @@ function _appendXfLastValue(init){
   return always(new LastValue(init));
 }
 
+var _XF_FLAG_ = {};
 function _dispatch(xf, appendXf){
     appendXf = appendXf || _appendXf;
     return function(){
@@ -107,30 +108,36 @@ function _dispatch(xf, appendXf){
     };
 }
 
-var _XF_FLAG_ = {};
-function _dispatchableN(n, name, f) {
-    var d = function() {
-        var args = slice.call(arguments);
-        var dispatchList = function(obj){
-          var fn = f;
-          if(_hasMethod(name, obj)){
-            fn = obj[name];
-          }
-          return fn.apply(obj, args);
-        };
-        dispatchList.__RAMDA_XF_FLAG_ = _XF_FLAG_;
-        return dispatchList;
-   };
 
-    switch(n){
-      case 2: return _dispatchable2(d);
-      case 3: return _dispatchable3(d);
-      default: throw new Error('Must add _dispatchable'+n);
+function _dispatchable(name, f) {
+  return function _dispatchArgs(){
+    var args = slice.call(arguments);
+
+    function _dispatchList(obj){
+      var fn = f;
+      if(_hasMethod(name, obj)){
+        fn = obj[name];
+      }
+      return fn.apply(obj, args);
     }
+
+    _dispatchList.__RAMDA_XF_FLAG_ = _XF_FLAG_;
+    return _dispatchList;
+  };
 }
 
 function _dispatchMarkConvert(fn) {
     return fn.__RAMDA_XF_FLAG_ === _XF_FLAG_ ? fn(_XF_FLAG_) : fn;
+}
+
+
+function _dispatchableN(n, name, f) {
+    var fn = _dispatchable(name, f);
+    switch(n){
+      case 2: return _dispatchable2(fn);
+      case 3: return _dispatchable3(fn);
+      default: throw new Error('Must add _dispatchable'+n);
+    }
 }
 
 function _dispatchable2(fn) {
