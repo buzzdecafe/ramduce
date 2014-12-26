@@ -110,16 +110,14 @@ function _dispatch(xf, appendXf){
 var _XF_FLAG_ = {};
 function _dispatchableN(n, name, f) {
     var d = function() {
-        var length = arguments.length;
-        var args = slice.call(arguments, 0, -1);
-        var obj = arguments[length - 1];
-
-        var fn = f;
-        if(_hasMethod(name, obj)){
-          fn = obj[name];
-        }
-
-        return fn.apply(obj, args);
+        var args = slice.call(arguments);
+        return function(obj){
+          var fn = f;
+          if(_hasMethod(name, obj)){
+            fn = obj[name];
+          }
+          return fn.apply(obj, args);
+        };
    };
 
     switch(n){
@@ -129,19 +127,26 @@ function _dispatchableN(n, name, f) {
     }
 }
 
+function _dispatchMark(fn){
+    fn.__RAMDA_XF_FLAG_ = _XF_FLAG_;
+    return fn;
+}
+
+function _dispatchMarkConvert(fn) {
+    return fn.__RAMDA_XF_FLAG_ === _XF_FLAG_ ? fn(_XF_FLAG_) : fn;
+}
+
 function _dispatchable2(fn) {
     return function(a, b) {
       switch (arguments.length) {
         case 0:
           throw _noArgsException();
         case 1:
-          var f =  function(b) {
-            return fn(a, b);
-          };
-          f._XF_FLAG_ = _XF_FLAG_;
-          return f;
+          return _dispatchMark(function(b){
+            return fn(a)(b);
+          });
         default:
-          return fn(a, b);
+          return fn(a)(b);
       }
     };
 }
@@ -153,16 +158,14 @@ function _dispatchable3(fn) {
           throw _noArgsException();
         case 1:
           return _curry2(function(b, c) {
-            return fn(a, b, c);
+            return fn(a, b)(c);
           });
         case 2:
-          var f = function(c) {
-            return fn(a, b, c);
-          };
-          f._XF_FLAG_ = _XF_FLAG_;
-          return f;
+          return _dispatchMark(function(c) {
+            return fn(a, b)(c);
+          });
         default:
-          return fn(a, b, c);
+          return fn(a, b)(c);
       }
     };
 }
@@ -263,17 +266,13 @@ R.transduce = _curry4(function(xf, fn, acc, ls) {
 //-----------------------------------------------
 
 //-----------------------------------------------
-function _xfConvert(fn) {
-    return fn._XF_FLAG_ === _XF_FLAG_ ? fn(_XF_FLAG_) : fn;
-}
-
 R.tCompose = function xCompose() {
-    var funcs = R.map(_xfConvert, slice.call(arguments));
+    var funcs = R.map(_dispatchMarkConvert, slice.call(arguments));
     return compose.apply(null, funcs);
 };
 
 R.tPipe = function xPipe() {
-    var funcs = R.map(_xfConvert, slice.call(arguments));
+    var funcs = R.map(_dispatchMarkConvert, slice.call(arguments));
     return pipe.apply(null, funcs);
 };
 
