@@ -4,7 +4,6 @@ var R = {},
     _curry2 = rlib._curry2,
     _curry3 = rlib._curry3,
     _curry4 = rlib._curry4,
-    _noArgsException = rlib._noArgsException,
     arrayReduce = rlib.arrayReduce,
     iterableReduce = rlib.iterableReduce,
     reduced = rlib.reduced,
@@ -108,16 +107,15 @@ var _appendXfLastValue = (function(){
 })();
 
 //-----------------------------------------------
-// _XF_FLAG_
-var _XF_FLAG_ = {};
-
-//-----------------------------------------------
 // _transduceDispatch
 function _transduceDispatch(xf, appendXf){
-    return function(){
+    return function _xfDispatch(){
         var obj = this;
         var transducer = xf.apply(null, arguments);
-        if(obj === _XF_FLAG_) return transducer;
+
+        if(isTransformer(obj)) {
+          return transducer(obj);
+        }
 
         var stepper = appendXf(obj);
         return _foldl(transducer(stepper), stepper.init(), obj);
@@ -125,74 +123,19 @@ function _transduceDispatch(xf, appendXf){
 }
 
 //-----------------------------------------------
-// _dispatchMarkConvert
-function _dispatchMarkConvert(fn) {
-    return fn.__RAMDA_XF_FLAG_ === _XF_FLAG_ ? fn(_XF_FLAG_) : fn;
-}
-
-//-----------------------------------------------
-// _dispatchableN
-var _dispatchableN = (function(){
-  function _dispatchableN(n, name, f) {
-      var fn = _dispatchable(name, f);
-      switch(n){
-        case 2: return _dispatchable2(fn);
-        case 3: return _dispatchable3(fn);
-        default: throw new Error('Must add _dispatchable'+n);
-      }
-  }
-
-  function _dispatchable(name, f){
-    return function _dispatchArgs(){
-      var args = slice.call(arguments);
-      function _dispatchList(obj){
-        return _dispatchableCall(name, f, args, obj);
-      }
-      _dispatchList.__RAMDA_XF_FLAG_ = _XF_FLAG_;
-      return _dispatchList;
-    };
-  }
-
-  function _dispatchableCall(name, f, args, obj){
+// _dispatchable
+function _dispatchable(name, f){
+  return function _dispatch(){
+    var length = arguments.length - 1;
+    var args = slice.call(arguments, 0, length);
+    var obj = arguments[length];
     var fn = f;
     if(_hasMethod(name, obj)){
       fn = obj[name];
     }
     return fn.apply(obj, args);
-  }
-
-  function _dispatchable2(fn) {
-      return function(a, b) {
-        switch (arguments.length) {
-          case 0:
-            throw _noArgsException();
-          case 1:
-            return fn(a);
-          default:
-            return fn(a)(b);
-        }
-      };
-  }
-
-  function _dispatchable3(fn) {
-      return function(a, b, c) {
-        switch (arguments.length) {
-          case 0:
-            throw _noArgsException();
-          case 1:
-            return _curry2(function(b, c) {
-              return fn(a, b)(c);
-            });
-          case 2:
-            return fn(a, b);
-          default:
-            return fn(a, b)(c);
-        }
-      };
-  }
-
-  return _dispatchableN;
-})();
+  };
+}
 
 //-----------------------------------------------
 // MAPPING
@@ -213,7 +156,7 @@ var _xmap = (function(){
   });
 })();
 
-R.map = _dispatchableN(2, 'map', _transduceDispatch(_xmap, _appendXf));
+R.map = _curry2(_dispatchable('map', _transduceDispatch(_xmap, _appendXf)));
 
 //-----------------------------------------------
 
@@ -234,7 +177,8 @@ var _xfilter = (function(){
   });
 })();
 
-R.filter = _dispatchableN(2, 'filter', _transduceDispatch(_xfilter, _appendXf));
+R.filter = _curry2(_dispatchable('filter', _transduceDispatch(_xfilter, _appendXf)));
+
 //-----------------------------------------------
 
 //-----------------------------------------------
@@ -255,7 +199,7 @@ var _xtake = (function(){
   });
 })();
 
-R.take = _dispatchableN(2, 'take', _transduceDispatch(_xtake, _appendXf));
+R.take = _curry2(_dispatchable('take', _transduceDispatch(_xtake, _appendXf)));
 
 //-----------------------------------------------
 // FINDING
@@ -278,7 +222,7 @@ var _xfind = (function(){
   });
 })();
 
-R.find = _dispatchableN(2, 'find', _transduceDispatch(_xfind, _appendXfLastValue(void 0)));
+R.find = _curry2(_dispatchable('find', _transduceDispatch(_xfind, _appendXfLastValue(void 0))));
 
 //-----------------------------------------------
 // FOLDING
@@ -300,19 +244,6 @@ R.transduce = _curry4(function(xf, fn, acc, ls) {
 });
 
 //-----------------------------------------------
-// tCompose
-R.tCompose = function xCompose() {
-    var funcs = R.map(_dispatchMarkConvert, slice.call(arguments));
-    return compose.apply(null, funcs);
-};
-
-//-----------------------------------------------
-// tPipe
-R.tPipe = function xPipe() {
-    var funcs = R.map(_dispatchMarkConvert, slice.call(arguments));
-    return pipe.apply(null, funcs);
-};
-
-//-----------------------------------------------
 R.compose = compose;
+R.pipe = pipe;
 module.exports = R;
