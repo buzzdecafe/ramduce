@@ -17,7 +17,6 @@ describe('map', function() {
         assert.strictEqual(R.map(add1, obj), 101);
     });
 
-/* No longer supported...
     it('dispatches to transformer objects', function() {
         var obj = {
             step: function(acc, x) { return acc.concat(x); },
@@ -28,7 +27,6 @@ describe('map', function() {
             xf: obj
         });
     });
-    */
 
     it('is automatically curried', function() {
         var inc = R.map(add1);
