@@ -243,6 +243,18 @@ R.transduce = _curry4(function(xf, fn, acc, ls) {
     return _foldl(xf(fn), acc, ls);
 });
 
+R.into = _curry3(function(to, transducer, from){
+    var init, stepper;
+    if(isTransformer(to)){
+        stepper = to;
+        init = stepper.init();
+    } else {
+        stepper = _appendXf(to);
+        init = to;
+    }
+    return _foldl(transducer(stepper), init, from);
+});
+
 //-----------------------------------------------
 R.compose = compose;
 R.pipe = pipe;
